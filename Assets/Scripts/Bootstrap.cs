@@ -173,7 +173,17 @@ namespace Dreamland
                 yield break;
             }
 
-            bundleLoader.BuildPlaceholderRoom(manifest);
+            bool roomLoaded = false;
+            yield return bundleLoader.LoadRoom(manifestUrl, manifest,
+                (_root) => { roomLoaded = true; },
+                (error) => { Debug.LogError("Room load error: " + error); }
+            );
+
+            if (!roomLoaded)
+            {
+                yield break;
+            }
+
             yield return telemetry.Emit("room_load_success", new Dictionary<string, object> { { "room_id", roomId } });
 
             SpawnPlayer();
