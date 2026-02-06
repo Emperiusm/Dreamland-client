@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Dreamland.Json;
+using Dreamland.iOS;
 using UnityEngine;
+using UnityEngine.iOS;
 
 namespace Dreamland
 {
@@ -13,6 +15,7 @@ namespace Dreamland
         [SerializeField] private bool autoStart = true;
         [SerializeField] private int statusPollAttempts = 20;
         [SerializeField] private float statusPollIntervalSeconds = 2f;
+        [SerializeField] private float captureDurationSeconds = 10f;
 
         private DreamlandApiClient apiClient;
         private RoomBundleLoader bundleLoader;
@@ -20,6 +23,7 @@ namespace Dreamland
 
         void Awake()
         {
+            EnsureRoomPlanReceiver();
             apiClient = gameObject.AddComponent<DreamlandApiClient>();
             bundleLoader = gameObject.AddComponent<RoomBundleLoader>();
             telemetry = gameObject.AddComponent<TelemetryClient>();
@@ -36,28 +40,53 @@ namespace Dreamland
             }
         }
 
+        private void EnsureRoomPlanReceiver()
+        {
+            var existing = GameObject.Find("RoomPlanBridge");
+            if (existing != null)
+            {
+                return;
+            }
+            var go = new GameObject("RoomPlanBridge");
+            go.AddComponent<RoomPlanCaptureReceiver>();
+        }
+
         private IEnumerator RunInternalBetaFlow()
         {
+            if (!IsCaptureSupported())
+            {
+                Debug.LogError("RoomPlan not supported on this device.");
+                yield break;
+            }
+
+            yield return RequestCameraPermission();
+
             yield return telemetry.Emit("scan_start", new Dictionary<string, object>());
 
             string scanId = null;
             string manifestUploadUrl = null;
-            string artifactUploadUrl = null;
+            string usdzUploadUrl = null;
+            string jsonUploadUrl = null;
 
             var sessionPayload = new Dictionary<string, object>
             {
                 { "user_id", config.userId },
                 { "room_category", "bedroom" },
                 { "privacy_tier", "private" },
-                { "artifacts", new object[] { new Dictionary<string, object> { { "name", "room.usdz" } } } }
+                { "artifacts", new object[]
+                    {
+                        new Dictionary<string, object> { { "name", "room.usdz" } },
+                        new Dictionary<string, object> { { "name", "room.json" } }
+                    }
+                }
             };
 
             var sessionJson = MiniJsonSerialize(sessionPayload);
             yield return apiClient.PostJson("/scans/session", sessionJson, (request) =>
             {
-                if (request.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
+                if (request == null || request.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError("Session error: " + request.error);
+                    Debug.LogError("Session error: " + request?.error);
                     return;
                 }
 
@@ -70,31 +99,45 @@ namespace Dreamland
                 {
                     manifestUploadUrl = uploadUrls["manifest"].ToString();
                     var artifacts = uploadUrls["artifacts"] as List<object>;
-                    if (artifacts != null && artifacts.Count > 0)
+                    if (artifacts != null && artifacts.Count >= 2)
                     {
-                        var artifact = artifacts[0] as Dictionary<string, object>;
-                        artifactUploadUrl = artifact?["url"].ToString();
+                        usdzUploadUrl = (artifacts[0] as Dictionary<string, object>)?["url"].ToString();
+                        jsonUploadUrl = (artifacts[1] as Dictionary<string, object>)?["url"].ToString();
                     }
                 }
             });
 
-            if (string.IsNullOrEmpty(scanId) || string.IsNullOrEmpty(manifestUploadUrl) || string.IsNullOrEmpty(artifactUploadUrl))
+            if (string.IsNullOrEmpty(scanId) || string.IsNullOrEmpty(manifestUploadUrl) || string.IsNullOrEmpty(usdzUploadUrl) || string.IsNullOrEmpty(jsonUploadUrl))
             {
                 Debug.LogError("Missing scan session data.");
                 yield break;
             }
 
-            var manifestJson = BuildPlaceholderManifest(scanId, config.userId);
+            RoomPlanCapture.StartCapture();
+            yield return new WaitForSeconds(captureDurationSeconds);
+            RoomPlanCapture.StopCapture();
+
+            var export = RoomPlanCapture.ExportCapture();
+            var usdzPath = export.usdzPath;
+            var jsonPath = export.jsonPath;
+            if (string.IsNullOrEmpty(usdzPath) || string.IsNullOrEmpty(jsonPath))
+            {
+                Debug.LogError("RoomPlan export failed.");
+                yield break;
+            }
+
+            var manifestJson = ManifestBuilder.Build(scanId, config.userId, usdzPath, jsonPath);
             yield return apiClient.PutRaw(manifestUploadUrl, Encoding.UTF8.GetBytes(manifestJson), "application/json", null);
-            yield return apiClient.PutRaw(artifactUploadUrl, Encoding.UTF8.GetBytes("fake-binary"), "application/octet-stream", null);
+            yield return apiClient.PutFile(usdzUploadUrl, usdzPath, "model/vnd.usdz+zip", null);
+            yield return apiClient.PutFile(jsonUploadUrl, jsonPath, "application/json", null);
 
             yield return telemetry.Emit("scan_upload_complete", new Dictionary<string, object> { { "scan_id", scanId } });
 
             yield return apiClient.PostJson($"/scans/{scanId}/commit", "{}", (request) =>
             {
-                if (request.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
+                if (request == null || request.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError("Commit error: " + request.error);
+                    Debug.LogError("Commit error: " + request?.error);
                 }
             });
 
@@ -104,9 +147,9 @@ namespace Dreamland
                 yield return new WaitForSeconds(statusPollIntervalSeconds);
                 yield return apiClient.GetJson($"/scans/{scanId}/status", (request) =>
                 {
-                    if (request.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
+                    if (request == null || request.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
                     {
-                        Debug.LogError("Status error: " + request.error);
+                        Debug.LogError("Status error: " + request?.error);
                         return;
                     }
                     var data = MiniJson.Deserialize(request.downloadHandler.text) as Dictionary<string, object>;
@@ -190,33 +233,27 @@ namespace Dreamland
             yield return telemetry.Emit("movement_start", new Dictionary<string, object> { { "room_id", roomId } });
         }
 
-        private static string BuildPlaceholderManifest(string scanId, string userId)
+        private bool IsCaptureSupported()
         {
-            var manifest = new Dictionary<string, object>
-            {
-                { "scan_id", scanId },
-                { "owner_user_id", userId },
-                { "capture", new Dictionary<string, object>
-                    {
-                        { "device_model", "iPhone15,3" },
-                        { "os_version", "iOS" },
-                        { "app_version", "0.1.0" },
-                        { "capture_duration_sec", 60 },
-                        { "room_category", "bedroom" },
-                        { "privacy_tier", "private" }
-                    }
-                },
-                { "consent", new Dictionary<string, object>
-                    {
-                        { "upload_scope", true },
-                        { "extended_use_scope", false },
-                        { "consent_version", "2026-02" }
-                    }
-                },
-                { "artifacts", new object[] { new Dictionary<string, object> { { "name", "room.usdz" }, { "bytes", 10 }, { "sha256", "placeholder" } } } }
-            };
+#if UNITY_EDITOR
+            return true;
+#else
+            var os = DeviceGate.GetOsVersion();
+            var model = DeviceGate.GetDeviceModel();
+            var hasLiDAR = DeviceGate.HasLiDAR(model);
+            return DeviceGate.IsSupported(os, hasLiDAR);
+#endif
+        }
 
-            return MiniJsonSerialize(manifest);
+        private IEnumerator RequestCameraPermission()
+        {
+#if UNITY_IOS
+            if (!Application.HasUserAuthorization(UserAuthorization.WebCam))
+            {
+                yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
+            }
+#endif
+            yield return null;
         }
 
         private static string MiniJsonSerialize(Dictionary<string, object> obj)
@@ -249,14 +286,14 @@ namespace Dreamland
                 owner_user_id = source["owner_user_id"].ToString();
                 capture = new Capture();
                 consent = new Consent();
-                artifacts = new[] { new Artifact() };
+                artifacts = new[] { new Artifact(), new Artifact() };
             }
         }
 
         [Serializable]
         private class Capture
         {
-            public string device_model = "iPhone15,3";
+            public string device_model = "iPhone";
             public string os_version = "iOS";
             public string app_version = "0.1.0";
             public int capture_duration_sec = 60;

@@ -8,16 +8,18 @@
 
 ## Validation Steps
 1. Press Play in Unity.
-2. Confirm `scan_start` and `scan_upload_complete` events are emitted.
-3. Confirm `/scans/:scan_id/status` reaches `ready` in backend logs.
-4. Confirm `/rooms/:room_id/bundle` returns a manifest URL.
-5. Confirm room meshes load (glTFast) or placeholder appears if missing.
-6. Confirm `room_load_success` and `movement_start` events are emitted.
+2. Confirm device passes RoomPlan gating (iOS 16+ and LiDAR).
+3. Start capture, wait for auto stop, and export artifacts.
+4. Upload USDZ + JSON and commit scan.
+5. Confirm `/scans/:scan_id/status` reaches `ready`.
+6. Confirm `/rooms/:room_id/bundle` returns a manifest URL.
+7. Confirm room meshes load (glTFast) and colliders attach.
+8. Confirm `room_load_success` and `movement_start` events are emitted.
 
 ## Pass/Fail Criteria
 - PASS if scan completes, room loads, and player can move without clipping.
 - FAIL if processing does not complete, bundle is missing, or movement fails.
 
 ## Notes
-- RoomPlan capture is stubbed in Unity and requires native iOS plugin implementation.
+- RoomPlan capture requires iOS 16+ and LiDAR devices.
 - If bundle loading fails, check manifest URL and asset paths.

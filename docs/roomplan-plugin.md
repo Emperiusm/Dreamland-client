@@ -1,7 +1,7 @@
 # RoomPlan Plugin (iOS)
 
 ## Overview
-Unity uses a native iOS plugin to access RoomPlan (RoomCaptureSession). The plugin exports a USDZ and a JSON metadata file into the app Documents directory.
+Unity uses a native iOS plugin to access RoomPlan (RoomCaptureSession). The plugin exports a USDZ and a JSON metadata file into the app Documents directory and sends capture events back to Unity.
 
 ## API Surface
 C interface (Unity interop):
@@ -11,17 +11,25 @@ C interface (Unity interop):
 - `rp_export_capture_json()` → C string path to `room.json`
 - `rp_free_string(ptr)`
 
-C# wrapper: `Dreamland.iOS.RoomPlanCapture`.
+Unity C# wrapper: `Dreamland.iOS.RoomPlanCapture`.
 
 ## Export Location
 `<Documents>/Dreamland/room.usdz`
 `<Documents>/Dreamland/room.json`
+
+## Capture Events
+Events sent to Unity GameObject `RoomPlanBridge` method `OnCaptureEvent`:
+- `capture_started`
+- `capture_completed`
+- `capture_failed`
+
+Payload includes `usdz_path`, `json_path`, and `error`.
 
 ## Requirements
 - iOS 16+
 - LiDAR-capable device for RoomPlan
 
 ## TODO
-- Implement `RoomCaptureSession` delegate hooks for progress + errors.
-- Capture clean metadata JSON (currently uses `rawValue`).
-- Surface permission errors to Unity.
+- Progress callbacks (RoomCaptureSession updates).
+- Structured metadata conversion for manifest fields.
+- Permission error surfacing in Unity UI.

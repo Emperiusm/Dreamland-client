@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -43,6 +44,18 @@ namespace Dreamland
             request.SetRequestHeader("Content-Type", contentType);
             yield return request.SendWebRequest();
             callback?.Invoke(request);
+        }
+
+        public IEnumerator PutFile(string url, string path, string contentType, Action<UnityWebRequest> callback)
+        {
+            if (!File.Exists(path))
+            {
+                callback?.Invoke(null);
+                yield break;
+            }
+
+            var bytes = File.ReadAllBytes(path);
+            yield return PutRaw(url, bytes, contentType, callback);
         }
 
         private string CombineUrl(string path)
