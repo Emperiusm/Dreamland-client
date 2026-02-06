@@ -13,7 +13,7 @@
 2. Confirm device passes RoomPlan gating (iOS 16+ and LiDAR).
 3. Accept camera permission when prompted.
 4. Start capture, wait for auto stop, and export artifacts.
-5. Upload USDZ + JSON and commit scan.
+5. Upload USDZ + JSON and commit scan (with retry/backoff).
 6. Confirm `/scans/:scan_id/status` reaches `ready`.
 7. Confirm `/rooms/:room_id/bundle` returns a manifest URL.
 8. Confirm room meshes load (glTFast) and colliders attach.
@@ -27,4 +27,4 @@
 ## Notes
 - RoomPlan capture requires iOS 16+ and LiDAR devices.
 - If bundle loading fails, check manifest URL and asset paths.
-- Upload retries are recommended for unstable networks.
+- Asset cache uses `Application.persistentDataPath` and is keyed by bundle hash.

@@ -5,6 +5,21 @@ namespace Dreamland.iOS
 {
     public static class DeviceGate
     {
+        private static readonly string[] LiDARiPhoneModels = {
+            "iphone 12 pro",
+            "iphone 12 pro max",
+            "iphone 13 pro",
+            "iphone 13 pro max",
+            "iphone 14 pro",
+            "iphone 14 pro max",
+            "iphone 15 pro",
+            "iphone 15 pro max"
+        };
+
+        private static readonly string[] LiDARiPadModels = {
+            "ipad pro"
+        };
+
         public static bool IsSupported(string osVersion, bool hasLiDAR)
         {
             if (!hasLiDAR)
@@ -52,14 +67,19 @@ namespace Dreamland.iOS
             }
 
             var model = deviceModel.ToLowerInvariant();
-            if (model.Contains("iphone") && model.Contains("pro"))
+            foreach (var entry in LiDARiPhoneModels)
             {
-                return true;
+                if (model.Contains(entry))
+                {
+                    return true;
+                }
             }
-
-            if (model.Contains("ipad") && model.Contains("pro"))
+            foreach (var entry in LiDARiPadModels)
             {
-                return true;
+                if (model.Contains(entry))
+                {
+                    return true;
+                }
             }
 
             return false;

@@ -41,8 +41,10 @@ namespace Dreamland
         public IEnumerator LoadRoom(string manifestUrl, RoomBundleManifest manifest, Action<GameObject> onLoaded, Action<string> onError)
         {
             var roomRoot = new GameObject("RoomRoot");
-            var meshUrl = ResolveAssetUrl(manifestUrl, GetAsset(manifest, "mesh_lod0"));
-            var colliderUrl = ResolveAssetUrl(manifestUrl, GetAsset(manifest, "collision_mesh"));
+            var meshPath = GetAsset(manifest, "mesh_lod0");
+            var colliderPath = GetAsset(manifest, "collision_mesh");
+            var meshUrl = ResolveAssetUrl(manifestUrl, meshPath);
+            var colliderUrl = ResolveAssetUrl(manifestUrl, colliderPath);
 
             if (string.IsNullOrEmpty(meshUrl))
             {
@@ -50,7 +52,7 @@ namespace Dreamland
                 yield break;
             }
 
-            var meshTask = LoadGltf(meshUrl, roomRoot.transform, "RoomMesh");
+            var meshTask = LoadGltf(meshUrl, roomRoot.transform, "RoomMesh", manifest.bundleId, meshPath);
             while (!meshTask.IsCompleted)
             {
                 yield return null;
@@ -63,7 +65,7 @@ namespace Dreamland
 
             if (!string.IsNullOrEmpty(colliderUrl))
             {
-                var colliderTask = LoadGltf(colliderUrl, roomRoot.transform, "RoomCollider");
+                var colliderTask = LoadGltf(colliderUrl, roomRoot.transform, "RoomCollider", manifest.bundleId, colliderPath);
                 while (!colliderTask.IsCompleted)
                 {
                     yield return null;
@@ -104,6 +106,54 @@ namespace Dreamland
             return baseUrl.TrimEnd('/') + "/" + assetPath.TrimStart('/');
         }
 
+        private async Task<bool> LoadGltf(string url, Transform parent, string name, string bundleHash, string assetPath)
+        {
+            var import = new GltfImport();
+            if (AssetCache.TryGet(bundleHash, assetPath, out var cachedPath))
+            {
+                var successLocal = await import.Load("file://" + cachedPath);
+                if (successLocal)
+                {
+                    var rootLocal = new GameObject(name);
+                    rootLocal.transform.SetParent(parent, false);
+                    import.InstantiateMainScene(rootLocal.transform);
+                    return true;
+                }
+            }
+
+            var success = await import.Load(url);
+            if (!success)
+            {
+                return false;
+            }
+
+            var root = new GameObject(name);
+            root.transform.SetParent(parent, false);
+            import.InstantiateMainScene(root.transform);
+
+            var glbData = await DownloadBytes(url);
+            if (glbData != null)
+            {
+                AssetCache.Store(bundleHash, assetPath, glbData);
+            }
+
+            return true;
+        }
+
+        private static async Task<byte[]> DownloadBytes(string url)
+        {
+            using (var request = UnityWebRequest.Get(url))
+            {
+                var op = request.SendWebRequest();
+                while (!op.isDone) await Task.Yield();
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    return null;
+                }
+                return request.downloadHandler.data;
+            }
+        }
+
         private static string GetAsset(RoomBundleManifest manifest, string key)
         {
             if (manifest == null || manifest.assets == null)
@@ -117,21 +167,6 @@ namespace Dreamland
             }
 
             return string.Empty;
-        }
-
-        private async Task<bool> LoadGltf(string url, Transform parent, string name)
-        {
-            var import = new GltfImport();
-            var success = await import.Load(url);
-            if (!success)
-            {
-                return false;
-            }
-
-            var root = new GameObject(name);
-            root.transform.SetParent(parent, false);
-            import.InstantiateMainScene(root.transform);
-            return true;
         }
 
         private void AssignMeshColliders(GameObject root, string colliderRootName)

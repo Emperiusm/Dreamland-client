@@ -22,17 +22,24 @@ namespace Dreamland
                 artifacts.Add(BuildArtifact("room.json", jsonPath));
             }
 
+            var metadata = string.Empty;
+            if (File.Exists(jsonPath))
+            {
+                metadata = File.ReadAllText(jsonPath);
+            }
+            var captureMetadata = RoomPlanMetadata.Parse(metadata);
+
             var manifest = new Dictionary<string, object>
             {
                 { "scan_id", scanId },
                 { "owner_user_id", userId },
                 { "capture", new Dictionary<string, object>
                     {
-                        { "device_model", "iPhone" },
-                        { "os_version", "iOS" },
+                        { "device_model", captureMetadata.DeviceModel },
+                        { "os_version", captureMetadata.OsVersion },
                         { "app_version", "0.1.0" },
-                        { "capture_duration_sec", 60 },
-                        { "room_category", "bedroom" },
+                        { "capture_duration_sec", captureMetadata.DurationSeconds },
+                        { "room_category", captureMetadata.RoomCategory },
                         { "privacy_tier", "private" }
                     }
                 },

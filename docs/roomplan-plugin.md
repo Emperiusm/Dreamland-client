@@ -29,7 +29,10 @@ Payload includes `usdz_path`, `json_path`, and `error`.
 - iOS 16+
 - LiDAR-capable device for RoomPlan
 
+## Metadata Shaping
+`RoomPlanMetadata` parses the exported JSON and maps fields into the manifest builder. Missing values fall back to defaults.
+
 ## TODO
 - Progress callbacks (RoomCaptureSession updates).
-- Structured metadata conversion for manifest fields.
+- Structured metadata conversion for all capture fields.
 - Permission error surfacing in Unity UI.

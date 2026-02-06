@@ -1,0 +1,14 @@
+{
+  "bundle_id": "bundle123",
+  "schema_version": "1.0",
+  "pipeline_version": "proc_2026_02_04",
+  "room_id": "room1",
+  "assets": {
+    "mesh_lod0": "mesh/room_lod0.glb",
+    "collision_mesh": "colliders/collision_mesh.glb"
+  },
+  "checksums": {
+    "mesh/room_lod0.glb": "sha256:deadbeef",
+    "colliders/collision_mesh.glb": "sha256:beefdead"
+  }
+}
