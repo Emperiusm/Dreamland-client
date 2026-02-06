@@ -26,8 +26,11 @@ See `docs/DEV_SETUP.md` in the backend repo for local infra setup and seed user 
 
 ## Structure
 - `Assets/Scripts/` - API client, bundle loader, and player controller
+- `Assets/Plugins/iOS/` - RoomPlan native plugin scaffolding (stub)
 - `Assets/Tests/` - EditMode tests for JSON parsing and URL resolution
+- `docs/internal-beta-validation.md` - validation checklist
 
 ## Notes
 - The current flow uploads a placeholder manifest and asset to exercise the pipeline.
 - `RoomBundleLoader` uses glTFast to load processed meshes when available.
+- RoomPlan capture is stubbed. Replace `RoomPlanBridge` with real RoomPlan integration.
