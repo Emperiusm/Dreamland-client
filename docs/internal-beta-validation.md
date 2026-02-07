@@ -23,6 +23,7 @@
   - placeholder GLB assets are acceptable for initial validation
 
 **Backend Startup (Dreamland repo)**
+Run the commands in a macOS/Linux shell, or in a WSL Linux shell on Windows (recommended). If you prefer PowerShell, you can prefix Linux commands with `wsl` to run them in your default WSL distro.
 From the Dreamland repo:
 ```bash
 # init schema
