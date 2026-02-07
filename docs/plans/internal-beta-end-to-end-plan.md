@@ -359,7 +359,7 @@ git commit -m "feat: add GLB asset cache"
 ### Task 8: Documentation update
 
 **Files:**
-- Modify: `docs/internal-beta-validation.md`
+- Modify: `docs/alpha-1-validation.md`
 - Modify: `docs/roomplan-plugin.md`
 
 **Step 1: Update docs**
@@ -370,7 +370,7 @@ git commit -m "feat: add GLB asset cache"
 **Step 2: Commit**
 
 ```bash
-git add docs/internal-beta-validation.md docs/roomplan-plugin.md
+git add docs/alpha-1-validation.md docs/roomplan-plugin.md
 git commit -m "docs: update beta flow with retries and cache"
 ```
 

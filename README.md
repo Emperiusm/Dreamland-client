@@ -28,7 +28,7 @@ See `docs/DEV_SETUP.md` in the Dreamland backend repo for local infra setup and 
 - `Assets/Scripts/` - API client, bundle loader, and player controller
 - `Assets/Plugins/iOS/` - RoomPlan native plugin scaffolding (stub)
 - `Assets/Tests/` - EditMode tests for JSON parsing and URL resolution
-- `docs/internal-beta-validation.md` - validation checklist
+- `docs/alpha-1-validation.md` - validation checklist
 
 ## Notes
 - The current flow uploads a placeholder manifest and asset to exercise the pipeline.

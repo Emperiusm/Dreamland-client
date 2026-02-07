@@ -171,7 +171,7 @@ git commit -m "feat: upload real RoomPlan artifacts"
 ### Task 4: Update docs with capture flow
 
 **Files:**
-- Modify: `docs/internal-beta-validation.md`
+- Modify: `docs/alpha-1-validation.md`
 - Modify: `docs/roomplan-plugin.md`
 
 **Step 1: Update documentation**
@@ -182,7 +182,7 @@ git commit -m "feat: upload real RoomPlan artifacts"
 **Step 2: Commit**
 
 ```bash
-git add docs/internal-beta-validation.md docs/roomplan-plugin.md
+git add docs/alpha-1-validation.md docs/roomplan-plugin.md
 git commit -m "docs: update capture flow guidance"
 ```
 
