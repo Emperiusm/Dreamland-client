@@ -1,13 +1,25 @@
 # Internal Beta Validation (Scan → Room Navigation)
 
 ## Preconditions
-- Backend services running (API, worker, orchestrator, MinIO, NATS).
-- Seeded internal beta user created via backend script.
 - Unity project opened with `Assets/Scenes/InternalBeta.unity`.
 - `Assets/Config/DreamlandConfig.asset` updated with API + token values.
 - Xcode installed (required to build iOS apps from the Unity-generated Xcode project).
 - iOS build includes `NSCameraUsageDescription` in Info.plist.
 - Device is LiDAR-capable and running iOS 16+ (iPhone 15 Pro is supported).
+
+## Backend Readiness (Choose One)
+**Mode A: Client-only smoke test (no backend)**
+- No backend services required.
+- Use placeholder bundle loading (skip upload/processing steps).
+
+**Mode B: Full end-to-end test (requires Scanworld)**
+- Backend services running (API, worker, orchestrator, MinIO, NATS).
+- Seeded internal beta user created via backend script.
+- Start Scanworld infra with Docker Compose from the Scanworld repo: `docker-compose up -d`.
+- Processing pipeline must emit a bundle manifest with at least:
+  - `mesh_lod0` and `collision_mesh` assets
+  - a valid `manifest_url` returned by `/rooms/:room_id/bundle`
+  - placeholder GLB assets are acceptable for initial validation
 
 ## Build & Deploy to iPhone (Unity → Xcode → Device)
 1. Install Unity Hub (the launcher that installs Unity versions).
@@ -40,6 +52,14 @@
    - Select device and **Run**
 
 ## Validation Steps
+**Mode A: Client-only smoke test (no backend)**
+1. Launch app on device.
+2. Confirm device passes RoomPlan gating (iOS 16+ and LiDAR).
+3. Accept camera permission when prompted.
+4. Start capture, wait for auto stop, and export artifacts.
+5. Load a placeholder bundle/room and confirm movement works.
+
+**Mode B: Full end-to-end test (requires Scanworld)**
 1. Launch app on device.
 2. Confirm device passes RoomPlan gating (iOS 16+ and LiDAR).
 3. Accept camera permission when prompted.
