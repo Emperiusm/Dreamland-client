@@ -12,18 +12,47 @@
 - No backend services required.
 - Use placeholder bundle loading (skip upload/processing steps).
 
-**Mode B: Full end-to-end test (requires Dreamland)**
+**Mode B: Full end-to-end test (requires Dreamland backend, end_to_end)**
 - Backend services running (API, worker, orchestrator, MinIO, NATS).
 - Seeded internal beta user created via backend script.
-- Start Dreamland infra with Docker Compose from the Dreamland repo using project name `dreamland-infra`: `docker-compose -p dreamland-infra up -d`.
+- Start Dreamland infra with Docker Compose from the Dreamland repo using project name `dreamland-infra`: `docker compose -p dreamland-infra up -d`.
+- Infra ports: MinIO S3 `19000`, MinIO console `19001`, Redis `16379`.
 - Processing pipeline must emit a bundle manifest with at least:
   - `mesh_lod0` and `collision_mesh` assets
   - a valid `manifest_url` returned by `/rooms/:room_id/bundle`
   - placeholder GLB assets are acceptable for initial validation
 
+**Backend Startup (Dreamland repo)**
+From the Dreamland repo:
+```bash
+# init schema
+psql postgresql://dreamland:dreamland@localhost:5432/dreamland -f infra/sql/001_init.sql
+psql postgresql://dreamland:dreamland@localhost:5432/dreamland -f infra/sql/002_workflow_orchestration.sql
+
+# API
+cd apps/api
+cp .env.example .env
+npm install
+npm run dev
+
+# worker (stub)
+cd ../worker
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python src/main.py
+
+# orchestrator
+cd ../orchestrator
+npm install
+NATS_URL=nats://localhost:4222 \
+DATABASE_URL=postgres://dreamland:dreamland@localhost:5432/dreamland \
+node dist/index.js
+```
+
 ## Build & Deploy to iPhone (Unity → Xcode → Device)
 1. Install Unity Hub (the launcher that installs Unity versions).
-2. In Unity Hub, install Unity **6000.3 LTS** and include **iOS Build Support**.
+2. In Unity Hub: **Installs** → **Install Editor** → select Unity **6000.3 LTS**, then select **iOS Build Support** modules and **Install**.
 3. Add the project to Unity Hub:
    - Projects tab → **Open** → select the `Dreamland-client` folder.
 4. Open the project from Unity Hub.
@@ -59,7 +88,7 @@
 4. Start capture, wait for auto stop, and export artifacts.
 5. Load a placeholder bundle/room and confirm movement works.
 
-**Mode B: Full end-to-end test (requires Dreamland)**
+**Mode B: Full end-to-end test (requires Dreamland, end_to_end)**
 1. Launch app on device.
 2. Confirm device passes RoomPlan gating (iOS 16+ and LiDAR).
 3. Accept camera permission when prompted.

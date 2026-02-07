@@ -3,7 +3,7 @@
 Unity client for internal beta: scan → process → room bundle → move around.
 
 ## Requirements
-- Unity **2022.3 LTS** (recommended: `2022.3.18f1`)
+- Unity **6000.3 LTS** (Unity 6.3 LTS)
 - Git LFS installed for binary assets
 
 ## Quick Start
@@ -22,7 +22,7 @@ The client expects the following endpoints from the server:
 - `GET /rooms/:room_id/bundle`
 - `POST /events`
 
-See `docs/DEV_SETUP.md` in the backend repo for local infra setup and seed user steps.
+See `docs/DEV_SETUP.md` in the Dreamland backend repo for local infra setup and seed user steps.
 
 ## Structure
 - `Assets/Scripts/` - API client, bundle loader, and player controller
