@@ -10,6 +10,7 @@
 
 ## Build & Deploy to iPhone (Unity → Xcode → Device)
 1. Install Unity **2022.3.18f1** with iOS Build Support via Unity Hub.
+   - If you're upgrading to Unity 6000.3 LTS, follow the plan in `docs/unity-6000-upgrade-plan.md` first.
 2. Open project in Unity Hub: `Dreamland-client`.
 3. Open scene: `Assets/Scenes/InternalBeta.unity`.
 4. Set config in `Assets/Config/DreamlandConfig.asset`.
