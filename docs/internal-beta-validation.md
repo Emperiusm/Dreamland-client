@@ -9,22 +9,28 @@
 - Device is LiDAR-capable and running iOS 16+ (iPhone 15 Pro is supported).
 
 ## Build & Deploy to iPhone (Unity → Xcode → Device)
-1. Install Unity **2022.3.18f1** with iOS Build Support via Unity Hub.
-   - If you're upgrading to Unity 6000.3 LTS, follow the plan in `docs/unity-6000-upgrade-plan.md` first.
-2. Open project in Unity Hub: `Dreamland-client`.
-3. Open scene: `Assets/Scenes/InternalBeta.unity`.
-4. Set config in `Assets/Config/DreamlandConfig.asset`.
-5. Open **File → Build Settings**:
+1. Install Unity Hub (the launcher that installs Unity versions).
+2. In Unity Hub, install Unity **6000.3 LTS** and include **iOS Build Support**.
+3. Add the project to Unity Hub:
+   - Projects tab → **Open** → select the `Dreamland-client` folder.
+4. Open the project from Unity Hub.
+5. If Unity prompts to upgrade project files, click **Continue**.
+6. Package Manager: update packages to latest compatible versions.
+7. Upgrade URP (Universal Render Pipeline) to 17.x and update dependent packages.
+8. Ensure a URP Pipeline Asset is assigned in Project Settings -> Graphics.
+9. Open scene: `Assets/Scenes/InternalBeta.unity`.
+10. Set config in `Assets/Config/DreamlandConfig.asset`.
+11. Open **File → Build Settings**:
    - Platform: **iOS**
    - Click **Switch Platform**
    - Add scene `InternalBeta` to **Scenes In Build**
-6. Player Settings:
+12. Player Settings:
    - **Company Name** and **Product Name** set
    - **Bundle Identifier** unique (e.g., `com.emperiusm.dreamland.internal`)
    - **Target iOS Version**: 16.0+
-7. Click **Build** and choose an output folder (e.g., `Builds/iOS`).
-8. Open the generated Xcode project.
-9. In Xcode:
+13. Click **Build** and choose an output folder (e.g., `Builds/iOS`).
+14. Open the generated Xcode project.
+15. In Xcode:
    - Select the target → **Signing & Capabilities**
    - Choose your Apple ID team
    - Enable **Automatically manage signing**
