@@ -22,6 +22,34 @@
   - a valid `manifest_url` returned by `/rooms/:room_id/bundle`
   - placeholder GLB assets are acceptable for initial validation
 
+**Backend Startup (Dreamland repo)**
+From the Dreamland repo:
+```bash
+# init schema
+psql postgresql://dreamland:dreamland@localhost:5432/dreamland -f infra/sql/001_init.sql
+psql postgresql://dreamland:dreamland@localhost:5432/dreamland -f infra/sql/002_workflow_orchestration.sql
+
+# API
+cd apps/api
+cp .env.example .env
+npm install
+npm run dev
+
+# worker (stub)
+cd ../worker
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python src/main.py
+
+# orchestrator
+cd ../orchestrator
+npm install
+NATS_URL=nats://localhost:4222 \
+DATABASE_URL=postgres://dreamland:dreamland@localhost:5432/dreamland \
+node dist/index.js
+```
+
 ## Build & Deploy to iPhone (Unity → Xcode → Device)
 1. Install Unity Hub (the launcher that installs Unity versions).
 2. In Unity Hub: **Installs** → **Install Editor** → select Unity **6000.3 LTS**, then select **iOS Build Support** modules and **Install**.
