@@ -5,6 +5,7 @@
 - Seeded internal beta user created via backend script.
 - Unity project opened with `Assets/Scenes/InternalBeta.unity`.
 - `Assets/Config/DreamlandConfig.asset` updated with API + token values.
+- Xcode installed (required to build iOS apps from the Unity-generated Xcode project).
 - iOS build includes `NSCameraUsageDescription` in Info.plist.
 - Device is LiDAR-capable and running iOS 16+ (iPhone 15 Pro is supported).
 
@@ -18,11 +19,12 @@
 6. Package Manager: update packages to latest compatible versions.
 7. Upgrade URP (Universal Render Pipeline) to 17.x and update dependent packages.
 8. Ensure a URP Pipeline Asset is assigned in Project Settings -> Graphics.
+   - If you don’t have one: **Assets** → **Create** → **Rendering** → **URP Asset (with Universal Renderer)**, then assign it in **Project Settings** → **Graphics**.
 9. Open scene: `Assets/Scenes/InternalBeta.unity`.
 10. Set config in `Assets/Config/DreamlandConfig.asset`.
-11. Open **File → Build Settings**:
+11. Open **File → Build Profiles**:
    - Platform: **iOS**
-   - Click **Switch Platform**
+   - Click **Switch Profile**
    - Add scene `InternalBeta` to **Scenes In Build**
 12. Player Settings:
    - **Company Name** and **Product Name** set
