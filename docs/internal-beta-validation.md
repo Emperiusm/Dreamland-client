@@ -12,10 +12,10 @@
 - No backend services required.
 - Use placeholder bundle loading (skip upload/processing steps).
 
-**Mode B: Full end-to-end test (requires Scanworld)**
+**Mode B: Full end-to-end test (requires Dreamland)**
 - Backend services running (API, worker, orchestrator, MinIO, NATS).
 - Seeded internal beta user created via backend script.
-- Start Scanworld infra with Docker Compose from the Scanworld repo: `docker-compose up -d`.
+- Start Dreamland infra with Docker Compose from the Dreamland repo using project name `dreamland-infra`: `docker-compose -p dreamland-infra up -d`.
 - Processing pipeline must emit a bundle manifest with at least:
   - `mesh_lod0` and `collision_mesh` assets
   - a valid `manifest_url` returned by `/rooms/:room_id/bundle`
@@ -59,7 +59,7 @@
 4. Start capture, wait for auto stop, and export artifacts.
 5. Load a placeholder bundle/room and confirm movement works.
 
-**Mode B: Full end-to-end test (requires Scanworld)**
+**Mode B: Full end-to-end test (requires Dreamland)**
 1. Launch app on device.
 2. Confirm device passes RoomPlan gating (iOS 16+ and LiDAR).
 3. Accept camera permission when prompted.
