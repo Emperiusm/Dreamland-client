@@ -6,7 +6,7 @@
 
 **Architecture:** Unity client handles capture, permissions, upload retries, and runtime loading via glTFast. Native iOS RoomPlan plugin exports USDZ + JSON metadata. Backend already provides presigned URLs and processing pipeline; this plan focuses on client reliability, schema validation, and UX.
 
-**Tech Stack:** Unity 2022.3 LTS, iOS RoomPlan (Swift), Unity C#, glTFast, UnityWebRequest.
+**Tech Stack:** Unity 6000.3 LTS, iOS RoomPlan (Swift), Unity C#, glTFast, UnityWebRequest.
 
 ---
 

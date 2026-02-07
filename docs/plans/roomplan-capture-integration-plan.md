@@ -6,7 +6,7 @@
 
 **Architecture:** Unity calls a native iOS RoomPlan plugin to start/stop capture and export USDZ + JSON. Unity gates capture by device/OS, requests permissions, uploads artifacts to presigned URLs, and emits telemetry events. Native plugin reports progress/completion via UnitySendMessage callbacks.
 
-**Tech Stack:** Unity 2022.3 LTS, iOS RoomPlan (Swift), Unity C# scripts, glTFast, UnityWebRequest.
+**Tech Stack:** Unity 6000.3 LTS, iOS RoomPlan (Swift), Unity C# scripts, glTFast, UnityWebRequest.
 
 ---
 
